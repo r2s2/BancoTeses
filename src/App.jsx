@@ -1,21 +1,22 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import Cadastro from './components/Cadastro';
-import CadastroDispositivos from './components/CadastroDispositivos';
-import Elaboracao from './components/Elaboracao';
-import Navbar from './components/Navbar';
+import AppRoutes from './routes';
+import './App.css';
 
-const App = () => {
+function App() {
   return (
-    <Router>
-      <Navbar />
-      <Switch>
-        <Route path="/" exact component={Cadastro} />
-        <Route path="/cadastro-dispositivos" component={CadastroDispositivos} />
-        <Route path="/elaboracao" component={Elaboracao} />
-      </Switch>
-    </Router>
+    <div className="app-container">
+      <nav className="navbar">
+        <ul>
+          <li><a href="/">Elaboração</a></li>
+          <li><a href="/cadastro">Cadastro de Teses</a></li>
+          <li><a href="/cadastro-dispositivos">Cadastro de Dispositivos</a></li>
+        </ul>
+      </nav>
+      <div className="content">
+        <AppRoutes />
+      </div>
+    </div>
   );
-};
+}
 
 export default App;

@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { DataContext } from '../context/DataContext';
+import { checkPermission } from '../utils/permissions';
 
 const Cadastro = () => {
     const [titulo, setTitulo] = useState('');
@@ -6,9 +9,18 @@ const Cadastro = () => {
     const [precedentes, setPrecedentes] = useState('');
     const [tags, setTags] = useState('');
     const [grupo, setGrupo] = useState('');
-
+    const [message, setMessage] = useState('');
+    
+    const { user } = useAuth();
+    const { addTese } = useContext(DataContext);
+    
     const handleSubmit = (e) => {
         e.preventDefault();
+        
+        if (!user || !checkPermission(user.role, 'canCreate')) {
+            setMessage('Você não tem permissão para criar teses.');
+            return;
+        }
         
         const newTese = {
             id: Date.now(),
@@ -18,23 +30,24 @@ const Cadastro = () => {
             tags,
             grupo,
             createdAt: new Date().toISOString(),
-            perfil: 'user_profile_placeholder' // Replace with actual user profile logic
+            createdBy: user ? user.username : 'anonymous'
         };
-
-        // Logic to save newTese to Teses.json
-        // This could involve an API call or local storage depending on your setup
-
+        
+        addTese(newTese);
+        
         // Clear the form
         setTitulo('');
         setTese('');
         setPrecedentes('');
         setTags('');
         setGrupo('');
+        setMessage('Tese cadastrada com sucesso!');
     };
 
     return (
         <div>
-            <h1>Cadastro</h1>
+            <h1>Cadastro de Teses</h1>
+            {message && <div className="message">{message}</div>}
             <form onSubmit={handleSubmit}>
                 <div>
                     <label>Título:</label>
@@ -48,6 +61,7 @@ const Cadastro = () => {
                 <div>
                     <label>Tese:</label>
                     <textarea 
+                        className="text-area"
                         value={tese} 
                         onChange={(e) => setTese(e.target.value)} 
                         required 
@@ -56,6 +70,7 @@ const Cadastro = () => {
                 <div>
                     <label>Precedentes:</label>
                     <textarea 
+                        className="text-area"
                         value={precedentes} 
                         onChange={(e) => setPrecedentes(e.target.value)} 
                         required 

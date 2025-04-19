@@ -1,34 +1,50 @@
-import { useState, useEffect } from 'react';
+import { useContext } from 'react';
+import { DataContext } from '../context/DataContext';
 
-const useSearch = (dataUrl) => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [results, setResults] = useState([]);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            const response = await fetch(dataUrl);
-            const data = await response.json();
-            return data;
-        };
-
-        const handleSearch = async () => {
-            if (searchTerm.length >= 3) {
-                const data = await fetchData();
-                const filteredResults = data.filter(item =>
-                    item.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    item.tese.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    item.precedentes.toLowerCase().includes(searchTerm.toLowerCase())
+const useSearch = () => {
+    const { teses, dispositivos } = useContext(DataContext);
+    
+    const searchTeses = (searchTerm) => {
+        if (!searchTerm || searchTerm.length < 3) {
+            return [];
+        }
+        
+        // Dividir os termos de busca por espaço (AND lógico)
+        const terms = searchTerm.toLowerCase().split(' ').filter(term => term.length >= 3);
+        
+        return teses.filter(tese => {
+            // Todos os termos devem estar presentes em algum campo
+            return terms.every(term => {
+                return (
+                    (tese.titulo && tese.titulo.toLowerCase().includes(term)) ||
+                    (tese.tese && tese.tese.toLowerCase().includes(term)) ||
+                    (tese.precedentes && tese.precedentes.toLowerCase().includes(term)) ||
+                    (tese.tags && tese.tags.some(tag => tag.toLowerCase().includes(term)))
                 );
-                setResults(filteredResults);
-            } else {
-                setResults([]);
-            }
-        };
-
-        handleSearch();
-    }, [searchTerm, dataUrl]);
-
-    return { searchTerm, setSearchTerm, results };
+            });
+        });
+    };
+    
+    const searchDispositivos = (searchTerm) => {
+        if (!searchTerm || searchTerm.length < 3) {
+            return [];
+        }
+        
+        // Dividir os termos de busca por espaço (AND lógico)
+        const terms = searchTerm.toLowerCase().split(' ').filter(term => term.length >= 3);
+        
+        return dispositivos.filter(dispositivo => {
+            // Todos os termos devem estar presentes em algum campo
+            return terms.every(term => {
+                return (
+                    (dispositivo.texto && dispositivo.texto.toLowerCase().includes(term)) ||
+                    (dispositivo.descricao && dispositivo.descricao.toLowerCase().includes(term))
+                );
+            });
+        });
+    };
+    
+    return { searchTeses, searchDispositivos };
 };
 
 export default useSearch;

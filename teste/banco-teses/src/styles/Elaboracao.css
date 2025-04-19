@@ -1,0 +1,134 @@
+/* filepath: d:\BancoTeses\BancoTeses\src\styles\Elaboracao.css */
+.elaboracao-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.search-section {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  z-index: 1000;
+}
+
+.result-item {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.result-item:hover {
+  background-color: #f5f5f5;
+}
+
+.floating-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.grau-button {
+  padding: 10px 15px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.grau-button:hover {
+  background-color: #357abd;
+}
+
+.editor-container {
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.submit-button {
+  margin-top: 10px;
+  padding: 10px 15px;
+  background-color: #5cb85c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submit-button:hover {
+  background-color: #4cae4c;
+}
+
+.final-document {
+  margin-top: 30px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 20px;
+  min-height: 300px;
+}
+
+.document-content {
+  white-space: pre-wrap;
+}
+
+.primeiro-grau {
+  font-family: Arial, sans-serif;
+  font-size: 10pt;
+  font-style: italic;
+  margin-left: 4cm;
+}
+
+.segundo-grau {
+  font-family: Arial, sans-serif;
+  font-size: 10pt;
+  font-style: italic;
+  margin-left: 4cm;
+}
+
+.dispositivo {
+  margin-top: 20px;
+  font-weight: bold;
+}
+
+.actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.copy-button {
+  padding: 10px 15px;
+  background-color: #5bc0de;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.copy-button:hover {
+  background-color: #46b8da;
+}

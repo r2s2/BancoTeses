@@ -1,61 +1,36 @@
-import React, { useState } from 'react';
+import React, { forwardRef, useEffect } from 'react';
+import { Editor } from '@tinymce/tinymce-react';
+import '../styles/TextEditor.css';
 
-const TextEditor = ({ onTextChange }) => {
-    const [text, setText] = useState('');
-    const [isEditing, setIsEditing] = useState(false);
-    const [fontStyle, setFontStyle] = useState({ fontSize: '10px', fontStyle: 'normal', fontWeight: 'normal', textIndent: '0' });
-
-    const handleTextChange = (e) => {
-        setText(e.target.value);
-        onTextChange(e.target.value);
-    };
-
-    const toggleItalic = () => {
-        setFontStyle(prev => ({
-            ...prev,
-            fontStyle: prev.fontStyle === 'italic' ? 'normal' : 'italic'
-        }));
-    };
-
-    const toggleBold = () => {
-        setFontStyle(prev => ({
-            ...prev,
-            fontWeight: prev.fontWeight === 'bold' ? 'normal' : 'bold'
-        }));
-    };
-
-    const increaseIndent = () => {
-        setFontStyle(prev => ({
-            ...prev,
-            textIndent: '4cm'
-        }));
-    };
-
-    const handleSubmit = () => {
-        setIsEditing(false);
-        setText('');
-        setFontStyle({ fontSize: '10px', fontStyle: 'normal', fontWeight: 'normal', textIndent: '0' });
-    };
-
-    return (
-        <div>
-            {isEditing ? (
-                <div>
-                    <textarea
-                        value={text}
-                        onChange={handleTextChange}
-                        style={{ fontSize: fontStyle.fontSize, fontStyle: fontStyle.fontStyle, fontWeight: fontStyle.fontWeight, textIndent: fontStyle.textIndent }}
-                    />
-                    <button onClick={toggleItalic}>Italic</button>
-                    <button onClick={toggleBold}>Bold</button>
-                    <button onClick={increaseIndent}>Increase Indent</button>
-                    <button onClick={handleSubmit}>Incluir</button>
-                </div>
-            ) : (
-                <button onClick={() => setIsEditing(true)}>Edit Text</button>
-            )}
-        </div>
-    );
-};
+const TextEditor = forwardRef(({ value, onChange }, ref) => {
+  return (
+    <div className="text-editor-container">
+      <Editor
+        apiKey="your-tinymce-api-key" // Obtenha uma chave gratuita em https://www.tiny.cloud/
+        onInit={(evt, editor) => {
+          if (ref) {
+            ref.current = editor;
+          }
+        }}
+        value={value}
+        onEditorChange={onChange}
+        init={{
+          height: 300,
+          menubar: false,
+          plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
+            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'preview', 'help', 'wordcount'
+          ],
+          toolbar: 'undo redo | formatselect | ' +
+            'bold italic backcolor | alignleft aligncenter ' +
+            'alignright alignjustify | bullist numlist outdent indent | ' +
+            'removeformat | help',
+          content_style: 'body { font-family:Arial,sans-serif; font-size:14px }'
+        }}
+      />
+    </div>
+  );
+});
 
 export default TextEditor;

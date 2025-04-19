@@ -1,91 +1,214 @@
-import React, { useState, useEffect } from 'react';
-import { useSearch } from '../hooks/useSearch';
+import React, { useState, useContext, useRef } from 'react';
+import useSearch from '../hooks/useSearch';
+import { formatText } from '../utils/formatter';
+import { DataContext } from '../context/DataContext';
 import TextEditor from './TextEditor';
+import '../styles/Elaboracao.css';
 
 const Elaboracao = () => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [searchResults, setSearchResults] = useState([]);
+    const [dispositivoSearch, setDispositivoSearch] = useState('');
     const [selectedTese, setSelectedTese] = useState(null);
-    const [editorContent, setEditorContent] = useState('');
-    const [showEditor, setShowEditor] = useState(false);
     const [selectedDispositivo, setSelectedDispositivo] = useState(null);
+    const [elaborationText, setElaborationText] = useState('');
+    const [showTeseEditor, setShowTeseEditor] = useState(false);
+    const [editorType, setEditorType] = useState(''); // '1grau' or '2grau'
+    const [finalText, setFinalText] = useState('');
+    const [teseResults, setTeseResults] = useState([]);
+    const [dispositivoResults, setDispositivoResults] = useState([]);
+    const editorRef = useRef(null);
+    
     const { searchTeses, searchDispositivos } = useSearch();
-
-    useEffect(() => {
-        if (searchTerm.length >= 3) {
-            const results = searchTeses(searchTerm);
-            setSearchResults(results);
+    const { teses, dispositivos } = useContext(DataContext);
+    
+    const handleTeseSearch = (e) => {
+        const term = e.target.value;
+        setSearchTerm(term);
+        
+        if (term.length >= 3) {
+            const results = searchTeses(term);
+            setTeseResults(results);
         } else {
-            setSearchResults([]);
+            setTeseResults([]);
         }
-    }, [searchTerm, searchTeses]);
+    };
+
+    const handleDispositivoSearch = (e) => {
+        const term = e.target.value;
+        setDispositivoSearch(term);
+        
+        if (term.length >= 3) {
+            const results = searchDispositivos(term);
+            setDispositivoResults(results);
+        } else {
+            setDispositivoResults([]);
+        }
+    };
 
     const handleTeseSelect = (tese) => {
         setSelectedTese(tese);
-        setEditorContent('');
-        setShowEditor(false);
-    };
-
-    const handleIncludeText = () => {
-        if (editorContent) {
-            setSelectedTese((prev) => ({
-                ...prev,
-                elaboracao: [...(prev.elaboracao || []), editorContent],
-            }));
-            setEditorContent('');
-            setShowEditor(false);
-        }
-    };
-
-    const handleDispositivoSearch = (term) => {
-        if (term.length >= 3) {
-            return searchDispositivos(term);
-        }
-        return [];
-    };
-
-    const handleCopyText = () => {
-        const textToCopy = selectedTese ? `${selectedTese.titulo}\n${selectedTese.tese}\n${selectedTese.precedentes}\n${editorContent}` : '';
-        navigator.clipboard.writeText(textToCopy);
-        setSelectedTese(null);
-        setEditorContent('');
         setSearchTerm('');
-        setSearchResults([]);
+        setTeseResults([]);
+        
+        // Adiciona o conteúdo da tese ao texto final
+        const teseContent = `
+            <h3>${tese.titulo}</h3>
+            <div>${tese.tese}</div>
+            <div><strong>Precedentes:</strong> ${tese.precedentes}</div>
+        `;
+        
+        setFinalText(prevText => prevText + teseContent);
+    };
+    
+    const handleDispositivoSelect = (dispositivo) => {
+        setSelectedDispositivo(dispositivo);
+        setDispositivoSearch('');
+        setDispositivoResults([]);
+        
+        // Adiciona o dispositivo ao texto final
+        setFinalText(prevText => prevText + `<div class="dispositivo">${dispositivo.texto}</div>`);
+    };
+    
+    const handleGrauButtonClick = (grau) => {
+        setEditorType(grau);
+        setShowTeseEditor(true);
+    };
+    
+    const handleEditorSubmit = (text) => {
+        let formattedText = '';
+        
+        if (editorType === '1grau') {
+            formattedText = `<div class="primeiro-grau">${text}</div>`;
+        } else {
+            formattedText = `<div class="segundo-grau">${text}</div>`;
+        }
+        
+        setFinalText(prevText => prevText + formattedText);
+        setShowTeseEditor(false);
+        setElaborationText('');
+    };
+    
+    const copyToClipboard = () => {
+        // Remove HTML tags para copiar apenas o texto
+        const tempElement = document.createElement('div');
+        tempElement.innerHTML = finalText;
+        const textToCopy = tempElement.textContent || tempElement.innerText;
+        
+        navigator.clipboard.writeText(textToCopy)
+            .then(() => {
+                alert('Texto copiado para a área de transferência!');
+                // Limpar todos os campos
+                setFinalText('');
+                setSelectedTese(null);
+                setSelectedDispositivo(null);
+                setElaborationText('');
+            })
+            .catch(err => {
+                console.error('Erro ao copiar texto: ', err);
+            });
     };
 
     return (
-        <div>
-            <h1>Elaboração</h1>
-            <input
-                type="text"
-                placeholder="Pesquisar Tese"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <ul>
-                {searchResults.map((tese) => (
-                    <li key={tese.id} onClick={() => handleTeseSelect(tese)}>
-                        {tese.titulo}
-                    </li>
-                ))}
-            </ul>
-            {selectedTese && (
-                <div>
-                    <h2>{selectedTese.titulo}</h2>
-                    <p>{selectedTese.tese}</p>
-                    <p>{selectedTese.precedentes}</p>
-                    <button onClick={() => setShowEditor(!showEditor)}>
-                        {showEditor ? 'Cancelar' : 'Adicionar Texto'}
+        <div className="elaboracao-container">
+            <h2>Elaboração de Documentos</h2>
+            
+            <div className="search-section">
+                <h3>Buscar Teses</h3>
+                <input 
+                    type="text" 
+                    value={searchTerm}
+                    onChange={handleTeseSearch}
+                    placeholder="Digite para buscar teses (mínimo 3 caracteres)"
+                    className="search-input"
+                />
+                
+                {teseResults.length > 0 && (
+                    <div className="search-results">
+                        {teseResults.map(tese => (
+                            <div 
+                                key={tese.id} 
+                                className="result-item"
+                                onClick={() => handleTeseSelect(tese)}
+                            >
+                                {tese.titulo}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+            
+            <div className="floating-buttons">
+                <button 
+                    onClick={() => handleGrauButtonClick('1grau')}
+                    className="grau-button"
+                >
+                    1º Grau
+                </button>
+                <button 
+                    onClick={() => handleGrauButtonClick('2grau')}
+                    className="grau-button"
+                >
+                    2º Grau
+                </button>
+            </div>
+            
+            {showTeseEditor && (
+                <div className="editor-container">
+                    <TextEditor 
+                        value={elaborationText}
+                        onChange={setElaborationText}
+                        ref={editorRef}
+                    />
+                    <button 
+                        onClick={() => handleEditorSubmit(elaborationText)}
+                        className="submit-button"
+                    >
+                        Incluir
                     </button>
-                    {showEditor && (
-                        <div>
-                            <TextEditor content={editorContent} setContent={setEditorContent} />
-                            <button onClick={handleIncludeText}>Incluir</button>
-                        </div>
-                    )}
                 </div>
             )}
-            <button onClick={handleCopyText}>Copiar Texto</button>
+            
+            <div className="search-section">
+                <h3>Buscar Dispositivos</h3>
+                <input 
+                    type="text" 
+                    value={dispositivoSearch}
+                    onChange={handleDispositivoSearch}
+                    placeholder="Digite para buscar dispositivos (mínimo 3 caracteres)"
+                    className="search-input"
+                />
+                
+                {dispositivoResults.length > 0 && (
+                    <div className="search-results">
+                        {dispositivoResults.map(dispositivo => (
+                            <div 
+                                key={dispositivo.id} 
+                                className="result-item"
+                                onClick={() => handleDispositivoSelect(dispositivo)}
+                            >
+                                {dispositivo.descricao || dispositivo.texto.substring(0, 50)}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+            
+            <div className="final-document">
+                <h3>Documento Final</h3>
+                <div 
+                    className="document-content"
+                    dangerouslySetInnerHTML={{ __html: finalText }}
+                />
+            </div>
+            
+            <div className="actions">
+                <button 
+                    onClick={copyToClipboard}
+                    className="copy-button"
+                >
+                    Copiar Texto
+                </button>
+            </div>
         </div>
     );
 };

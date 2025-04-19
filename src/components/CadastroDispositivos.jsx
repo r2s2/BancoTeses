@@ -1,51 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { DataContext } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 
 const CadastroDispositivos = () => {
-    const [dispositivo, setDispositivo] = useState('');
+    const [texto, setTexto] = useState('');
+    const [descricao, setDescricao] = useState('');
+    const [message, setMessage] = useState('');
+    
+    const { user } = useAuth();
+    const { addDispositivo } = useContext(DataContext);
 
-    const handleChange = (e) => {
-        setDispositivo(e.target.value);
-    };
-
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        const timestamp = new Date().toISOString();
-        const newDevice = { id: timestamp, dispositivo };
-
+        
         try {
-            const response = await fetch('/data/Dispositivo.json', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newDevice),
+            addDispositivo({
+                texto,
+                descricao
             });
-
-            if (response.ok) {
-                alert('Dispositivo cadastrado com sucesso!');
-                setDispositivo('');
-            } else {
-                alert('Erro ao cadastrar dispositivo.');
-            }
+            
+            setMessage('Dispositivo cadastrado com sucesso!');
+            setTexto('');
+            setDescricao('');
         } catch (error) {
             console.error('Erro:', error);
-            alert('Erro ao cadastrar dispositivo.');
+            setMessage('Erro ao cadastrar dispositivo.');
         }
     };
 
     return (
-        <div>
+        <div className="cadastro-container">
             <h2>Cadastro de Dispositivos</h2>
+            {message && <div className="message">{message}</div>}
             <form onSubmit={handleSubmit}>
-                <label>
-                    Dispositivo:
+                <div>
+                    <label>Descrição:</label>
                     <input
                         type="text"
-                        value={dispositivo}
-                        onChange={handleChange}
+                        value={descricao}
+                        onChange={(e) => setDescricao(e.target.value)}
                         required
                     />
-                </label>
+                </div>
+                <div>
+                    <label>Texto do Dispositivo:</label>
+                    <textarea
+                        className="text-area"
+                        value={texto}
+                        onChange={(e) => setTexto(e.target.value)}
+                        required
+                    />
+                </div>
                 <button type="submit">Cadastrar</button>
             </form>
         </div>
